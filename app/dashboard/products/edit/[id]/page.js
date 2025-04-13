@@ -12,20 +12,75 @@ import {
   Star,
   MessageCircle,
   ImagePlus,
+  GripVertical,
+  X,
 } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const category = [
-  { label: "Electronics", value: "electronics" },
-  { label: "Fashion", value: "fashion" },
-  { label: "Home", value: "home" },
-  { label: "Toys", value: "toys" },
-  { label: "Sports", value: "sports" },
+  { label: "Men's Watches", value: "mens-watches" },
+  { label: "Women's Watches", value: "womens-watches" },
+  { label: "Smart Watches", value: "smart-watches" },
+  { label: "Classic Watches", value: "classic-watches" },
+  { label: "Watch Accessories", value: "watch-accessories" },
+  { label: "Global Brands", value: "global-brands" },
 ];
+
+function SortableItem({ id, image, index, onRemove }) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg"
+    >
+      <div {...attributes} {...listeners}>
+        <GripVertical className="text-gray-400" />
+      </div>
+      <img
+        src={image.preview || `https://eastern-maryjane-josamcode-baebec38.koyeb.app/images/products/${image}`}
+        alt={`Preview ${index + 1}`}
+        className="w-16 h-16 object-cover rounded"
+      />
+      <span className="text-sm text-gray-600">Image {index + 1}</span>
+      <button
+        type="button"
+        onClick={() => onRemove(index)}
+        className="ml-auto text-red-500 hover:text-red-700"
+      >
+        <X size={16} />
+      </button>
+    </div>
+  );
+}
 
 const EditProduct = () => {
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState(null);
-  const { id } = useParams(); // Get product ID from URL params
+  const [previewImages, setPreviewImages] = useState([]);
+  const { id } = useParams();
   const router = useRouter();
 
   const {
@@ -35,6 +90,13 @@ const EditProduct = () => {
     setValue,
     formState: { errors },
   } = useForm();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Fetch product data
   useEffect(() => {
@@ -47,7 +109,15 @@ const EditProduct = () => {
           throw new Error("Failed to fetch product");
         }
         const data = await response.json();
-        setProduct(data); // Assuming the API returns product data in `data`
+        setProduct(data);
+
+        // Initialize previewImages with existing images
+        const initialImages = data.images.map((img) => ({
+          file: null,
+          preview: `https://eastern-maryjane-josamcode-baebec38.koyeb.app/images/products/${img}`,
+          existing: true,
+        }));
+        setPreviewImages(initialImages);
         setLoading(false);
 
         const formattedCategory = Array.isArray(data.category)
@@ -78,6 +148,45 @@ const EditProduct = () => {
     fetchProduct();
   }, [id, setValue]);
 
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    const newPreviewImages = files.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+      existing: false,
+    }));
+    setPreviewImages([...previewImages, ...newPreviewImages]);
+    setValue("images", [
+      ...previewImages.map((img) => img.file).filter(Boolean),
+      ...files,
+    ]);
+  };
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      setPreviewImages((items) => {
+        const oldIndex = items.findIndex(
+          (_, index) => `image-${index}` === active.id
+        );
+        const newIndex = items.findIndex(
+          (_, index) => `image-${index}` === over.id
+        );
+
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        setValue("images", newItems.map((img) => img.file).filter(Boolean));
+        return newItems;
+      });
+    }
+  };
+
+  const removeImage = (index) => {
+    const newImages = previewImages.filter((_, i) => i !== index);
+    setPreviewImages(newImages);
+    setValue("images", newImages.map((img) => img.file).filter(Boolean));
+  };
+
   // Handle form submission
   const onSubmit = async (data) => {
     const formData = new FormData();
@@ -87,20 +196,30 @@ const EditProduct = () => {
       ? data.productCollection.toLowerCase().replace(/\s+/g, "_")
       : "";
 
+    // Add all form fields except images
     Object.entries(data).forEach(([key, value]) => {
-      if (key === "images" && value.length > 0) {
-        for (let i = 0; i < value.length; i++) {
-          formData.append("images", value[i]);
+      if (key !== "images") {
+        if (key === "discountPrice" && value === "") {
+          formData.append(key, "0");
+        } else if (key === "category") {
+          formData.append(
+            "category",
+            JSON.stringify(value.map((cat) => cat.value))
+          );
+        } else {
+          formData.append(key, value);
         }
-      } else if (key === "discountPrice" && value === "") {
-        formData.append(key, "0");
-      } else if (key === "category") {
-        formData.append(
-          "category",
-          JSON.stringify(value.map((cat) => cat.value))
-        );
-      } else {
-        formData.append(key, value);
+      }
+    });
+
+    // Handle images
+    previewImages.forEach((image) => {
+      if (image.file) {
+        // New image
+        formData.append("images", image.file);
+      } else if (image.existing) {
+        // Existing image
+        formData.append("existingImages", image.preview.split("/").pop());
       }
     });
 
@@ -111,10 +230,9 @@ const EditProduct = () => {
       });
 
       const result = await response.json();
-      console.log(result);
 
       if (result.status === "success") {
-        router.push("/dashboard/products"); // Uncomment to redirect after update
+        router.push("/dashboard/products");
       } else {
         toast.error(result.message || "Failed to update product.", {
           position: "top-right",
@@ -156,7 +274,6 @@ const EditProduct = () => {
 
   return (
     <>
-      {/* Toast Container */}
       <ToastContainer />
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <form
@@ -368,9 +485,38 @@ const EditProduct = () => {
             <input
               type="file"
               multiple
-              {...register("images")}
+              onChange={handleImageChange}
               className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
             />
+
+            {/* Image Preview and Reordering */}
+            <div className="mt-4">
+              <p className="text-sm text-gray-500 mb-2">
+                Drag and drop to reorder images
+              </p>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={previewImages.map((_, index) => `image-${index}`)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-2">
+                    {previewImages.map((image, index) => (
+                      <SortableItem
+                        key={`image-${index}`}
+                        id={`image-${index}`}
+                        image={image}
+                        index={index}
+                        onRemove={removeImage}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </div>
           </div>
 
           {/* Submit Button */}

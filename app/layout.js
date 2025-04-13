@@ -26,7 +26,7 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en">
-      <body className="box-border font-sans">
+      <body className="box-border font-sans" suppressHydrationWarning>
         <AuthProvider>
           <SidebarProvider>
             {!isLoginPage ? (

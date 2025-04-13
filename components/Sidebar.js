@@ -11,7 +11,7 @@ import Link from "next/link";
 import { SidebarContext } from "@/context/SidebarContext";
 
 export default function Sidebar() {
-  const { isOpen } = useContext(SidebarContext);
+  const { isOpen, toggleSidebar } = useContext(SidebarContext);
 
   const menuItems = [
     { href: "/dashboard", label: "Dashboard", icon: <Home size={20} /> },
@@ -38,9 +38,15 @@ export default function Sidebar() {
     },
   ];
 
+  const handleLinkClick = () => {
+    if (isOpen) {
+      toggleSidebar();
+    }
+  };
+
   return (
     <aside
-      className={`fixed left-0 top-0 h-screen bg-gradient-to-b from-gray-800 to-gray-900 text-white p-6 w-64 transform transition-transform duration-300 ease-in-out ${
+      className={`fixed z-50 left-0 top-0 h-screen bg-gradient-to-b from-gray-800 to-gray-900 text-white p-6 w-64 transform transition-transform duration-300 ease-in-out ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
@@ -49,6 +55,7 @@ export default function Sidebar() {
           <li key={item.href}>
             <Link
               href={item.href}
+              onClick={handleLinkClick}
               className="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-gray-700 transition-shadow duration-200 shadow-sm hover:shadow-md"
             >
               {item.icon}

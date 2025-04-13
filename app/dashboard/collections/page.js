@@ -103,7 +103,7 @@ export default function ManageCollections() {
         });
         setEditingId(null);
         setMessage("Collection updated successfully!");
-        setTimeout(() => setMessage(""), 3000); 
+        setTimeout(() => setMessage(""), 3000);
       });
   };
 
@@ -115,187 +115,233 @@ export default function ManageCollections() {
       }).then(() => {
         setCollections(collections.filter((c) => c.id !== id));
         setMessage("Collection deleted successfully!");
-        setTimeout(() => setMessage(""), 3000); 
+        setTimeout(() => setMessage(""), 3000);
       });
     }
   };
 
   return (
-    <div className="p-8">
-      {/* suc message*/}
+    <div className="container mx-auto px-4 py-8">
+      {/* Success Message */}
       {message && (
-        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6">
-          {message}
+        <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-green-700">{message}</p>
+            </div>
+          </div>
         </div>
       )}
 
-      <h1 className="text-3xl font-bold mb-6">Manage Collections</h1>
-
-      {/* choosing language */}
-      <div className="mb-6">
-        <label className="mr-2">Language:</label>
-        <select
-          value={lang}
-          onChange={(e) => setLang(e.target.value)}
-          className="p-2 border rounded"
-        >
-          <option value="en">English</option>
-          <option value="ar">Arabic</option>
-        </select>
-      </div>
-
-      {/* Toggle Icon */}
-      {/* <div className="flex justify-end p-2">
-        <button
-          onClick={toggleFormVisibility}
-          className="text-gray-500 hover:text-gray-700 cursor-pointer"
-        >
-          {isFormVisible ? (
-            <ChevronUp className="h-6 w-6" />
-          ) : (
-            <ChevronDown className="h-6 w-6" />
-          )}
-        </button>
-      </div> */}
-
-      {/* Form Container */}
-      <div
-        className={`bg-white shadow-md rounded-lg transition-all duration-300 mb-10 ${
-          isFormVisible ? "opacity-100" : "max-h-0 opacity-0"
-        }`}
-      >
-        {/* Form Content */}
-        <div className="p-6 space-y-4">
-          <h2 className="text-xl font-semibold mb-4">
-            {editingId ? "Edit Collection" : "Add New Collection"}
-          </h2>
-          <input
-            type="text"
-            placeholder="Name (English)"
-            value={newCollection.name.en}
-            onChange={(e) =>
-              setNewCollection({
-                ...newCollection,
-                name: { ...newCollection.name, en: e.target.value },
-              })
-            }
-            className="w-full p-3 border rounded"
-          />
-          <input
-            type="text"
-            placeholder="Name (Arabic)"
-            value={newCollection.name.ar}
-            onChange={(e) =>
-              setNewCollection({
-                ...newCollection,
-                name: { ...newCollection.name, ar: e.target.value },
-              })
-            }
-            className="w-full p-3 border rounded"
-          />
-          <input
-            type="text"
-            placeholder="Image URL"
-            value={newCollection.image}
-            onChange={(e) =>
-              setNewCollection({ ...newCollection, image: e.target.value })
-            }
-            className="w-full p-3 border rounded"
-          />
-          <textarea
-            placeholder="Description (English)"
-            value={newCollection.description.en}
-            onChange={(e) =>
-              setNewCollection({
-                ...newCollection,
-                description: {
-                  ...newCollection.description,
-                  en: e.target.value,
-                },
-              })
-            }
-            className="w-full p-3 border rounded"
-          />
-          <textarea
-            placeholder="Description (Arabic)"
-            value={newCollection.description.ar}
-            onChange={(e) =>
-              setNewCollection({
-                ...newCollection,
-                description: {
-                  ...newCollection.description,
-                  ar: e.target.value,
-                },
-              })
-            }
-            className="w-full p-3 border rounded"
-          />
-          <input
-            type="text"
-            placeholder="Value"
-            value={newCollection.value}
-            onChange={(e) =>
-              setNewCollection({ ...newCollection, value: e.target.value })
-            }
-            className="w-full p-3 border rounded"
-          />
-          <button
-            onClick={editingId ? handleUpdateCollection : handleAddCollection}
-            className="bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-600 w-full cursor-pointer"
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Collection Management</h1>
+        <div className="flex items-center space-x-4">
+          <select
+            value={lang}
+            onChange={(e) => setLang(e.target.value)}
+            className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            {editingId ? "Save Changes" : "Add Collection"}
+            <option value="en">English</option>
+            <option value="ar">Arabic</option>
+          </select>
+          <button
+            onClick={toggleFormVisibility}
+            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-150"
+          >
+            {isFormVisible ? (
+              <>
+                <ChevronUp className="h-5 w-5 mr-2" />
+                Hide Form
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-5 w-5 mr-2" />
+                Show Form
+              </>
+            )}
           </button>
         </div>
       </div>
 
-      {/* Table to display collections */}
-      <div className="bg-white shadow-md rounded-lg overflow-auto">
-        <h2 className="text-xl font-semibold p-4 border-b">Collections List</h2>
-        <table className="min-w-full">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="py-3 px-6 text-left">ID</th>
-              <th className="py-3 px-6 text-left">Name</th>
-              <th className="py-3 px-6 text-left">Image</th>
-              <th className="py-3 px-6 text-left">Description</th>
-              <th className="py-3 px-6 text-left">Value</th>
-              <th className="py-3 px-6 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {collections.map((collection, index) => (
-              <tr key={collection.id} className="hover:bg-gray-50">
-                <td className="py-4 px-6">{index + 1}</td>
-                <td className="py-4 px-6">{collection.name[lang] || ""}</td>
-                <td className="py-4 px-6">
-                  <img
-                    src={collection.image}
-                    alt={collection.name[lang] || ""}
-                    className="w-16 h-16 object-cover rounded"
-                  />
-                </td>
-                <td className="py-4 px-6">
-                  {collection.description[lang] || ""}
-                </td>
-                <td className="py-4 px-6">{collection.value}</td>
-                <td className="py-4 px-6 space-x-2">
-                  <button
-                    onClick={() => startEdit(collection.id)}
-                    className="bg-yellow-500 text-white px-3 py-2 rounded hover:bg-yellow-600 cursor-pointer"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteCollection(collection.id)}
-                    className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 cursor-pointer"
-                  >
-                    Delete
-                  </button>
-                </td>
+      {/* Form Container */}
+      <div
+        className={`bg-white rounded-xl shadow-sm overflow-hidden transition-all duration-300 mb-8 ${
+          isFormVisible ? "opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="p-6 space-y-4">
+          <h2 className="text-xl font-semibold text-gray-800">
+            {editingId ? "Edit Collection" : "Add New Collection"}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Name (English)</label>
+              <input
+                type="text"
+                placeholder="Enter English name"
+                value={newCollection.name.en}
+                onChange={(e) =>
+                  setNewCollection({
+                    ...newCollection,
+                    name: { ...newCollection.name, en: e.target.value },
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Name (Arabic)</label>
+              <input
+                type="text"
+                placeholder="Enter Arabic name"
+                value={newCollection.name.ar}
+                onChange={(e) =>
+                  setNewCollection({
+                    ...newCollection,
+                    name: { ...newCollection.name, ar: e.target.value },
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Image URL</label>
+            <input
+              type="text"
+              placeholder="Enter image URL"
+              value={newCollection.image}
+              onChange={(e) =>
+                setNewCollection({ ...newCollection, image: e.target.value })
+              }
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Description (English)</label>
+              <textarea
+                placeholder="Enter English description"
+                value={newCollection.description.en}
+                onChange={(e) =>
+                  setNewCollection({
+                    ...newCollection,
+                    description: {
+                      ...newCollection.description,
+                      en: e.target.value,
+                    },
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                rows="3"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Description (Arabic)</label>
+              <textarea
+                placeholder="Enter Arabic description"
+                value={newCollection.description.ar}
+                onChange={(e) =>
+                  setNewCollection({
+                    ...newCollection,
+                    description: {
+                      ...newCollection.description,
+                      ar: e.target.value,
+                    },
+                  })
+                }
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                rows="3"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">Value</label>
+            <input
+              type="text"
+              placeholder="Enter value"
+              value={newCollection.value}
+              onChange={(e) =>
+                setNewCollection({ ...newCollection, value: e.target.value })
+              }
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div className="flex justify-end">
+            <button
+              onClick={editingId ? handleUpdateCollection : handleAddCollection}
+              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-150"
+            >
+              {editingId ? "Save Changes" : "Add Collection"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Collections Table */}
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-100">
+              {collections.map((collection, index) => (
+                <tr key={collection.id} className="hover:bg-gray-50 transition-colors duration-150">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{index + 1}</div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm font-medium text-gray-900">{collection.name[lang] || ""}</div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center">
+                      <img
+                        src={"https://eastern-maryjane-josamcode-baebec38.koyeb.app/images/collections/" + collection.image}
+                        alt={collection.name[lang] || ""}
+                        className="h-12 w-12 object-cover rounded-lg"
+                      />
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-600 max-w-md truncate">
+                      {collection.description[lang] || ""}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{collection.value}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
+                    <button
+                      onClick={() => startEdit(collection.id)}
+                      className="text-blue-600 hover:text-blue-800 transition-colors duration-150"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCollection(collection.id)}
+                      className="text-red-600 hover:text-red-800 transition-colors duration-150"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
