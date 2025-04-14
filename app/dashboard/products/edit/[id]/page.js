@@ -14,6 +14,8 @@ import {
   ImagePlus,
   GripVertical,
   X,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import {
   DndContext,
@@ -41,7 +43,7 @@ const category = [
   { label: "Global Brands", value: "global-brands" },
 ];
 
-function SortableItem({ id, image, index, onRemove }) {
+function SortableItem({ id, image, index, onRemove, onMoveUp, onMoveDown, totalItems }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
 
@@ -65,13 +67,35 @@ function SortableItem({ id, image, index, onRemove }) {
         className="w-16 h-16 object-cover rounded"
       />
       <span className="text-sm text-gray-600">Image {index + 1}</span>
-      <button
-        type="button"
-        onClick={() => onRemove(index)}
-        className="ml-auto text-red-500 hover:text-red-700"
-      >
-        <X size={16} />
-      </button>
+      <div className="ml-auto flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onMoveUp}
+          disabled={index === 0}
+          className={`p-1 rounded-full ${
+            index === 0 ? "text-gray-300" : "text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          <ArrowUp size={16} />
+        </button>
+        <button
+          type="button"
+          onClick={onMoveDown}
+          disabled={index === totalItems - 1}
+          className={`p-1 rounded-full ${
+            index === totalItems - 1 ? "text-gray-300" : "text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          <ArrowDown size={16} />
+        </button>
+        <button
+          type="button"
+          onClick={() => onRemove(index)}
+          className="p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50"
+        >
+          <X size={16} />
+        </button>
+      </div>
     </div>
   );
 }
@@ -187,6 +211,28 @@ const EditProduct = () => {
     setValue("images", newImages.map((img) => img.file).filter(Boolean));
   };
 
+  const handleMoveUp = (index) => {
+    if (index > 0) {
+      setPreviewImages((items) => {
+        const newItems = [...items];
+        [newItems[index - 1], newItems[index]] = [newItems[index], newItems[index - 1]];
+        setValue("images", newItems.map((img) => img.file).filter(Boolean));
+        return newItems;
+      });
+    }
+  };
+
+  const handleMoveDown = (index) => {
+    if (index < previewImages.length - 1) {
+      setPreviewImages((items) => {
+        const newItems = [...items];
+        [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
+        setValue("images", newItems.map((img) => img.file).filter(Boolean));
+        return newItems;
+      });
+    }
+  };
+
   // Handle form submission
   const onSubmit = async (data) => {
     const formData = new FormData();
@@ -212,14 +258,15 @@ const EditProduct = () => {
       }
     });
 
-    // Handle images
+    // Handle images - preserve existing images and add new ones
     previewImages.forEach((image) => {
       if (image.file) {
         // New image
         formData.append("images", image.file);
       } else if (image.existing) {
-        // Existing image
-        formData.append("existingImages", image.preview.split("/").pop());
+        // Existing image - extract filename from the full URL
+        const existingImageName = image.preview.split("/").pop();
+        formData.append("existingImages", existingImageName);
       }
     });
 
@@ -511,6 +558,9 @@ const EditProduct = () => {
                         image={image}
                         index={index}
                         onRemove={removeImage}
+                        onMoveUp={() => handleMoveUp(index)}
+                        onMoveDown={() => handleMoveDown(index)}
+                        totalItems={previewImages.length}
                       />
                     ))}
                   </div>
