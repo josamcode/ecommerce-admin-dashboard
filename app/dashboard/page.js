@@ -52,6 +52,17 @@ export default function Dashboard() {
   const [orderStatusData, setOrderStatusData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [homeVisits, setHomeVisits] = useState(null);
+
+  useEffect(() => {
+    fetch("https://eastern-maryjane-josamcode-baebec38.koyeb.app/api/visits")
+      .then((res) => res.json())
+      .then((data) => {
+        const homePage = data.find((v) => v.page === "home");
+        setHomeVisits(homePage?.count || 0);
+      })
+      .catch((err) => console.error("Error fetching visit data:", err));
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -89,9 +100,10 @@ export default function Dashboard() {
         const newUsersThisWeek = users.data.data.filter(
           (user) => new Date(user.createdAt) >= lastWeek
         ).length;
-        const userGrowth = users.data.data.length > 0
-          ? (newUsersThisWeek / users.data.data.length) * 100
-          : 0;
+        const userGrowth =
+          users.data.data.length > 0
+            ? (newUsersThisWeek / users.data.data.length) * 100
+            : 0;
 
         // Calculate order growth (month over month)
         const lastMonth = new Date();
@@ -99,9 +111,10 @@ export default function Dashboard() {
         const newOrdersThisMonth = orders.data.data.filter(
           (order) => new Date(order.createdAt) >= lastMonth
         ).length;
-        const orderGrowth = orders.data.data.length > 0
-          ? (newOrdersThisMonth / orders.data.data.length) * 100
-          : 0;
+        const orderGrowth =
+          orders.data.data.length > 0
+            ? (newOrdersThisMonth / orders.data.data.length) * 100
+            : 0;
 
         // Process orders data for the line chart
         const ordersByDate = orders.data.data.reduce((acc, order) => {
@@ -199,7 +212,30 @@ export default function Dashboard() {
         </h1>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Link href="/dashboard" className="block">
+            <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Home Page Visits
+                  </p>
+                  <p className="text-2xl font-semibold text-gray-900">
+                    {homeVisits !== null
+                      ? homeVisits.toLocaleString()
+                      : "Loading..."}
+                  </p>
+                </div>
+                <Activity className="h-8 w-8 text-red-500" />
+              </div>
+              <div className="mt-4">
+                <span className="text-sm text-gray-400">
+                  Total visits recorded for home page
+                </span>
+              </div>
+            </div>
+          </Link>
+
           <Link href="/dashboard/orders" className="block">
             <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer">
               <div className="flex items-center justify-between">
