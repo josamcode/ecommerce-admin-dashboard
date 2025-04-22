@@ -42,9 +42,14 @@ const OrderDetails = ({ order }) => {
         <h2 className="text-xl font-semibold mb-4">Order Items</h2>
         <div className="space-y-4">
           {cart.map((item) => (
-            <div key={item._id} className="flex items-center overflow-auto space-x-4">
+            <div
+              key={item._id}
+              className="flex items-center overflow-auto space-x-4"
+            >
               <Image
-                src={`https://eastern-maryjane-josamcode-baebec38.koyeb.app/images/products/${item.image}`}
+                src={`https://eastern-maryjane-josamcode-baebec38.koyeb.app/images/products/${
+                  item.image || item.images[0]
+                }`}
                 alt={item.name}
                 width={50}
                 height={50}
